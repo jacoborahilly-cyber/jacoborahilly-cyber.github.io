@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMP20350 OOP Revision Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better readability and aesthetics */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .quiz-card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .option-button:hover {
+            transform: translateY(-2px);
+        }
+        .option-button {
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+    <div id="app" class="w-full max-w-2xl">
+        <!-- Quiz Card Container -->
+        <div class="bg-white quiz-card rounded-xl p-6 md:p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">COMP20350: OOP Revision Quiz</h1>
+            <p class="text-lg text-gray-600 mb-6">Test your knowledge on the core "Tricky Pairs" for your examination.</p>
+
+            <!-- Quiz State Rendering Area -->
+            <div id="quiz-area">
+                <!-- Content will be injected here (Start Screen, Question, or Results) -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- OOP Structure (JavaScript Implementation of Classes) ---
+
+        /**
+         * Represents a single multiple-choice question.
+         */
+        class Question {
+            constructor(prompt, options, correctAnswer) {
+                this.prompt = prompt;
+                this.options = options; // Array of strings
+                this.correctAnswer = correctAnswer; // Character (A, B, C, D, E)
+            }
+
+            isCorrect(answer) {
+                return answer.toUpperCase() === this.correctAnswer.toUpperCase();
+            }
+        }
+
+        /**
+         * Manages the state, logic, and rendering of the quiz.
+         */
+        class QuizApp {
+            constructor() {
+                this.appElement = document.getElementById('quiz-area');
+                this.allQuestions = this.loadTrickyQuestions();
+                this.questions = []; // The 25 questions selected for the current quiz run
+                this.currentQuestionIndex = 0;
+                this.score = 0;
+                this.totalQuestions = 25; // UPDATED to match the 25-question exam requirement.
+                this.isStarted = false;
+                this.render();
+            }
+
+            // Utility to shuffle an array
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            /**
+             * Creates a Question object by randomly inserting the correct answer (answerA)
+             * into the list of distractors and returning the new randomized array of options
+             * and the correct answer character (A-E).
+             * @param {string} prompt - The question text.
+             * @param {string} answerA - The correct definition.
+             * @param {string[]} distractors - The 4 incorrect definitions.
+             * @returns {Question} A fully randomized Question object.
+             */
+            createRandomizedQuestion(prompt, answerA, distractors) {
+                const options = [...distractors]; // Copy distractors
+                const correctIndex = Math.floor(Math.random() * 5); // Random position 0-4
+                const correctAnswerChar = String.fromCharCode(65 + correctIndex); // A, B, C, D, or E
+                
+                // Insert the correct answer at the random index
+                options.splice(correctIndex, 0, answerA);
+
+                return new Question(prompt, options, correctAnswerChar);
+            }
+
+            // Defines the comprehensive pool of 132 'tricky' questions
+            loadTrickyQuestions() {
+                const Q = [];
+                const R = this.createRandomizedQuestion.bind(this); // Alias for brevity
+
+                // ====================================================================
+                // 1. Core OOP Pillars
+                // ====================================================================
+
+                // Encapsulation (3 Qs)
+                Q.push(R("Q1.1: Which of the following is the primary goal of **Encapsulation**?", 
+                    "Bundling data (fields) and methods into a single unit (class) while restricting access to protect data integrity.", 
+                    ["Exposing only necessary details to the user and hiding all underlying implementation complexity.", "The ability of an object to take on many forms based on its runtime type.", "A mechanism allowing a new class to inherit properties and behaviors from an existing class.", "How closely related the responsibilities of a single class are."]));
+                Q.push(R("Q1.2: The use of `private` fields and `public` getter/setter methods is the Java mechanism for achieving:", 
+                    "Encapsulation, by controlling read and write access to internal state.", 
+                    ["Abstraction, by defining a high-level contract for the user.", "Synchronization, by creating thread locks on methods.", "Pass-by-Value, ensuring only a copy of the reference is passed.", "The creation of a Marker Interface."]));
+                Q.push(R("Q1.3: What does the term 'Data Hiding' refer to in the context of OOP?", 
+                    "A direct effect of Encapsulation, protecting an object's internal state from unauthorized external access.", 
+                    ["The definition of Abstract Methods without implementation details.", "The ability to serialize an object into a byte stream.", "The technique of preventing method overriding using the `final` keyword.", "The process of inspecting a class's structure at runtime."]));
+
+                // Abstraction (3 Qs)
+                Q.push(R("Q2.1: Hiding implementation details and showing only the relevant services to the client is the definition of:", 
+                    "Abstraction.", 
+                    ["Encapsulation, which is focused on data bundling and access control.", "Polymorphism, which is focused on varied behavior.", "The mechanism of method overloading.", "A low Code Coverage metric."]));
+                Q.push(R("Q2.2: Which construct is primarily designed to facilitate Abstraction by defining a strict contract of services without providing any state or implementation details (prior to Java 8)?", 
+                    "An Interface.", 
+                    ["A Concrete Class, designed for full implementation.", "A `final` Class.", "A class utilizing the `super` keyword.", "An Unchecked Exception, which is a logic error."]));
+                Q.push(R("Q2.3: In Java, using an Abstract Class allows for partial implementation hiding. What is the fundamental goal of this hiding process?", 
+                    "To expose only the necessary details to the user, managing complexity.", 
+                    ["To ensure that the class cannot be serialized.", "To guarantee that the method cannot be thrown.", "To prevent the use of Autoboxing.", "To ensure the object is only ever accessed by a single Thread."]));
+
+                // Inheritance (3 Qs)
+                Q.push(R("Q3.1: The mechanism where a new class acquires the properties and behaviors (fields and methods) of an existing class is:", 
+                    "Inheritance, establishing an 'is-a' relationship.", 
+                    ["Polymorphism, which focuses on behavior variation.", "Encapsulation, which focuses on data access control.", "Synchronization, which controls concurrent access.", "Reflection, which inspects classes at runtime."]));
+                Q.push(R("Q3.2: Which keyword is used in the class definition to denote that a class is a subclass of another class?", 
+                    "`extends`.", 
+                    ["`implements` (used for interfaces).", "`super` (used to reference the parent instance).", "`this` (used to reference the current instance).", "`new` (used to instantiate an object)."]));
+                Q.push(R("Q3.3: In Java, a key characteristic of Inheritance is that it strictly enforces:", 
+                    "Single Inheritance (a class can only inherit from one direct superclass).", 
+                    ["Multiple Inheritance (a class can inherit from multiple superclasses).", "Package-Private access.", "The use of Lambda Expressions.", "The prevention of Deadlock."]));
+
+                // Polymorphism (3 Qs)
+                Q.push(R("Q4.1: The ability of an object to take on many forms, allowing a single reference variable to refer to objects of different types, is known as:", 
+                    "Polymorphism.", 
+                    ["Abstraction.", "Inheritance.", "Cohesion.", "Generics, which enables type parameterization."]));
+                Q.push(R("Q4.2: Which core OOP concept is primarily achieved through Method Overriding and Dynamic Method Resolution?", 
+                    "Polymorphism (Runtime/Dynamic).", 
+                    ["Encapsulation.", "Method Overloading (Compile-Time/Static).", "Code Coverage.", "A Checked Exception."]));
+                Q.push(R("Q4.3: The term 'Dynamic Binding' in OOP refers to:", 
+                    "Method resolution at runtime, which is the mechanism behind polymorphism.", 
+                    ["The use of the `static` keyword to bind methods to the class.", "The binding of a constant value to a `final` variable.", "The process of creating a Mock Object.", "The closure of an I/O stream using `try-with-resources`."]));
+
+                // Cohesion (3 Qs)
+                Q.push(R("Q5.1: The concept that refers to how closely related the responsibilities of a single class or module are is called:", 
+                    "Cohesion. High Cohesion is a desirable design goal.", 
+                    ["Coupling (refers to the degree of interdependence between classes).", "Encapsulation.", "Code Coverage.", "Race Condition."]));
+                Q.push(R("Q5.2: A class that has low Cohesion typically violates which key design principle?", 
+                    "The Single Responsibility Principle (SRP).", 
+                    ["The Open/Closed Principle (OCP).", "The Liskov Substitution Principle (LSP).", "The Dependency Inversion Principle (DIP).", "The rule against using a Marker Interface."]));
+                Q.push(R("Q5.3: What is the benefit of designing classes with high Cohesion?", 
+                    "They are easier to understand, maintain, and reuse, as they focus on one task.", 
+                    ["They allow for easier use of the `throws` keyword.", "They guarantee that all code has 100% Code Coverage.", "They automatically prevent Deadlocks.", "They eliminate the need for using `this` or `super`."]));
+
+                // ====================================================================
+                // 2. Fundamental Java Mechanics & Contrast Pairs
+                // ====================================================================
+
+                // Class vs. Object (3 Qs)
+                Q.push(R("Q6.1: Which statement accurately differentiates a **Class** from an **Object**?", 
+                    "A Class is a blueprint defining structure and behavior; an Object is a specific runtime instance of that blueprint.", 
+                    ["A Class exists in memory with its own state; an Object only defines fields and methods.", "A Class is created using the `new` keyword; an Object is declared but not initialized.", "A Class can be marked `final`; an Object can only be declared `static`.", "A Class uses Pass-by-Reference; an Object uses Pass-by-Value."]));
+                Q.push(R("Q6.2: What is the primary function of the `new` keyword in Java?", 
+                    "To allocate memory and instantiate an Object from a Class.", 
+                    ["To declare a `final` constant variable.", "To indicate a method that must be Overridden.", "To declare a Checked Exception.", "To convert a primitive type to its Wrapper class (Autoboxing)."]));
+                Q.push(R("Q6.3: What is the term for the unique set of values stored in the fields of an object at any given time?", 
+                    "State.", 
+                    ["Behavior (defined by methods).", "Blueprint.", "Reference.", "Signature (method)."]));
+
+                // Overloading (3 Qs)
+                Q.push(R("Q7.1: The definition of **Method Overloading** requires:", 
+                    "Multiple methods in the same class sharing the same name but having distinct parameter lists (count or type).", 
+                    ["A subclass providing a new implementation for an inherited method (same signature).", "Multiple constructors with different parameter lists (Constructor Overloading).", "A method being marked `final` to prevent modification.", "The method to be called using the `super` keyword."]));
+                Q.push(R("Q7.2: Overloading is a form of:", 
+                    "Compile-Time (Static) Polymorphism.", 
+                    ["Runtime (Dynamic) Polymorphism.", "Encapsulation.", "Reflection.", "Race Condition."]));
+                Q.push(R("Q7.3: When Overloading, which aspect **cannot** be the only difference between method signatures?", 
+                    "The return type of the method.", 
+                    ["The number of parameters.", "The data types of the parameters.", "The order of parameter types.", "The access modifier."]));
+
+                // Overriding (3 Qs)
+                Q.push(R("Q8.1: **Method Overriding** occurs when:", 
+                    "A subclass provides a specific implementation for a method already defined in its superclass, using the exact same method signature.", 
+                    ["Multiple methods in the same class share the same name but differ in parameters.", "A method is marked `static` in both a superclass and subclass (Method Hiding).", "A class implements a method defined in a Functional Interface.", "The method is accessed using a Mock Object."]));
+                Q.push(R("Q8.2: Overriding is essential for achieving:", 
+                    "Runtime (Dynamic) Polymorphism.", 
+                    ["Compile-Time (Static) Polymorphism.", "Autoboxing.", "Unchecked Exceptions.", "Cohesion."]));
+                Q.push(R("Q8.3: What is the primary role of the `@Override` annotation?", 
+                    "It informs the compiler that the method is intended to override a superclass method, generating an error if the signature is incorrect.", 
+                    ["It makes the method Overloaded.", "It prevents the method from being subclassed (it should be `@final`).", "It automatically makes the method thread-safe (it should be `synchronized`).", "It ensures the method is accessible from outside the package (it should be `public`)."]));
+
+                // ====================================================================
+                // 3. Keywords and Access Modifiers
+                // ====================================================================
+
+                // static (Variable) (3 Qs)
+                Q.push(R("Q9.1: A `static` variable is characteristic because:", 
+                    "It is shared among all instances of a class and is created only once in memory when the class is loaded.", 
+                    ["Its value cannot be changed after initialization (a `final` variable).", "It is unique to each object and part of that object's state.", "It can only be accessed by a Thread that holds a lock.", "It must be accessed using the `super` keyword."]));
+                Q.push(R("Q9.2: Where is the memory for a `static` variable allocated?", 
+                    "In the Class Area (Method Area) of the JVM.", 
+                    ["In the Heap memory (where objects live).", "In the Stack memory (where local variables live).", "Only when the constructor is called.", "Only when a `try-with-resources` block is closed."]));
+                Q.push(R("Q9.3: Why is a `static` variable often used for a constant like `Math.PI` or a shared resource counter?", 
+                    "Because it ensures there is only one copy of the data, shared efficiently across the entire application.", 
+                    ["Because `static` variables automatically throw Checked Exceptions.", "Because they can be inspected using Reflection.", "Because they can never be marked `final`.", "Because they are immune to Deadlock."]));
+
+                // static (Method) (3 Qs)
+                Q.push(R("Q10.1: A `static` method can be invoked without:", 
+                    "Creating an instance of the class (it belongs to the class itself).", 
+                    ["Passing parameters.", "Declaring a `throws` clause.", "Using the `public` access modifier.", "Having 100% Code Coverage."]));
+                Q.push(R("Q10.2: What is the main restriction on what a `static` method can access?", 
+                    "It cannot directly access instance (non-static) variables or instance methods of the class.", 
+                    ["It cannot be declared `public`.", "It cannot use the `super` keyword.", "It must use a Mock Object for any external dependency.", "It cannot throw an Unchecked Exception."]));
+                Q.push(R("Q10.3: The `main` method is declared `static` so that:", 
+                    "The JVM can call the entry point without needing to instantiate the class first.", 
+                    ["It can be easily Overridden by a subclass.", "It can utilize Pass-by-Reference for object arguments.", "It can only access `private` members.", "It prevents the use of a Lambda Expression."]));
+
+                // final (Variable) (3 Qs)
+                Q.push(R("Q11.1: When applied to a variable, the `final` keyword means:", 
+                    "The value of the variable (or the reference, for objects) cannot be changed after it is first assigned (it creates a constant).", 
+                    ["The variable is shared among all instances of a class (it should be `static`).", "The variable can only be accessed by a subclass (it should be `protected`).", "The variable must be initialized to `null`.", "The variable is subject to Serialization."]));
+                Q.push(R("Q11.2: A `final` local variable in a method:", 
+                    "Cannot have its value reassigned after initialization.", 
+                    ["Is automatically `static`.", "Is passed by reference.", "Must throw an `IOException`.", "Must be declared in an Abstract Class."]));
+                Q.push(R("Q11.3: What is a common use case for a `static final` field?", 
+                    "Defining a class-level constant (e.g., a shared configuration value or `Math.PI`).", 
+                    ["Defining a variable that can be changed by concurrent Threads.", "Defining an Unchecked Exception.", "Defining a variable that can be easily Overridden by subclasses.", "Defining a new Functional Interface."]));
+
+                // final (Method) (3 Qs)
+                Q.push(R("Q12.1: If a method is marked `final`, what restriction does it impose?", 
+                    "It prevents subclasses from overriding that method, enforcing a specific implementation.", 
+                    ["It makes the method accessible only within the same package and by subclasses (it should be `protected`).", "It ensures the method must be implemented by all subclasses (it should be `abstract`).", "It makes the method a class-level member (it should be `static`).", "It ensures the method's result is fixed at compile time."]));
+                Q.push(R("Q12.2: The primary reason a designer would mark a method as `final` is to:", 
+                    "Prevent unwanted or dangerous modification of core behavior by a subclass.", 
+                    ["Increase the Code Coverage metric.", "Ensure the method always returns a Generics type.", "Make the method a Marker Interface.", "Facilitate a Race Condition."]));
+                Q.push(R("Q12.3: A `final` method is resolved at compile time, similar to:", 
+                    "Method Overloading.", 
+                    ["Method Overriding (resolved at runtime).", "Deadlock.", "Synchronization.", "Throwing a Checked Exception."]));
+
+                // final (Class) (3 Qs)
+                Q.push(R("Q13.1: A `final` class:", 
+                    "Cannot be extended (subclassed), preventing Inheritance.", 
+                    ["Cannot contain `final` methods.", "Can only contain `static` fields.", "Must implement a Functional Interface.", "Is automatically subject to Reflection."]));
+                Q.push(R("Q13.2: Why are immutable classes (like `String`) often declared `final`?", 
+                    "To prevent subclasses from being created, which could violate the immutability guarantee.", 
+                    ["To allow for easier Serialization into a byte stream.", "To enable the use of the `super` keyword.", "To enforce the definition of an Abstract Method.", "To make the class use Pass-by-Reference."]));
+                Q.push(R("Q13.3: What is a design disadvantage of using the `final` keyword on a class?", 
+                    "It prevents the use of Inheritance, limiting extensibility and polymorphism.", 
+                    ["It automatically makes all methods `synchronized`, hurting performance.", "It forces all methods to throw Checked Exceptions.", "It must use Autoboxing for all parameters.", "It must be instantiated using `try-with-resources`."]));
+
+                // Access Modifiers (public) (3 Qs)
+                Q.push(R("Q14.1: The `public` access modifier allows members to be accessed from:", 
+                    "Anywhere: any class, package, or subclass.", 
+                    ["Only within the same class (it should be `private`).", "Only within the same package (it should be Default).", "Only within the same package and by subclasses (it should be `protected`).", "Only by a `static` method."]));
+                Q.push(R("Q14.2: In the context of Encapsulation, `public` methods often act as:", 
+                    "Accessors and mutators (getters and setters), providing controlled access to `private` data.", 
+                    ["Internal logic handlers that never leave the class.", "Shared variables defined using `static`.", "Abstract Methods without implementation.", "Generics type parameters."]));
+                Q.push(R("Q14.3: What is the highest level of visibility in Java?", 
+                    "`public`.", 
+                    ["`protected`.", "`private`.", "Default (Package-Private).", "`this` access."]));
+
+                // Access Modifiers (private) (3 Qs)
+                Q.push(R("Q15.1: The `private` access modifier strictly restricts access to a field or method:", 
+                    "Only within the class where it is declared.", 
+                    ["Within the same package only.", "Within the same package and by subclasses only.", "From anywhere in the application (it should be `public`).", "Only by a `final` class."]));
+                Q.push(R("Q15.2: `private` is the foundation of which OOP pillar?", 
+                    "Encapsulation (Data Hiding).", 
+                    ["Abstraction.", "Polymorphism.", "Inheritance.", "Serialization."]));
+                Q.push(R("Q15.3: Can a subclass directly access a `private` member of its superclass?", 
+                    "No, `private` members are not inherited or accessible by subclasses, even with the `super` keyword.", 
+                    ["Yes, but only if the subclass is in the same package (it should be `protected` or Default).", "Yes, only by using Reflection.", "Yes, but only if the superclass is not `final`.", "Yes, if the member is a `static` variable."]));
+
+                // Access Modifiers (protected) (3 Qs)
+                Q.push(R("Q16.1: The `protected` access modifier permits access from:", 
+                    "Within the same package AND by subclasses (even if the subclass is in a different package).", 
+                    ["Only within the same package (it should be Default).", "Only within the same class (it should be `private`).", "Anywhere in the application (it should be `public`).", "Only by classes that implement a Marker Interface."]));
+                Q.push(R("Q16.2: A common use for the `protected` modifier is to:", 
+                    "Allow methods or fields to be customized or extended by derived classes while still restricting general public use.", 
+                    ["Prevent the method from being Overridden (it should be `final`).", "Make the member a shared constant (it should be `static final`).", "Force a Checked Exception to be thrown.", "Ensure the method uses Autoboxing."]));
+                Q.push(R("Q16.3: If a subclass outside of the superclass's package wants to call a method in the superclass, which access modifier is sufficient?", 
+                    "`protected` or `public`.", 
+                    ["`private` (not sufficient).", "Default (Package-Private) (not sufficient).", "`final`.", "`this` only."]));
+
+                // Access Modifiers (Default/Package-Private) (3 Qs)
+                Q.push(R("Q17.1: If no access modifier is explicitly declared for a class member, its accessibility defaults to:", 
+                    "Package-Private (Accessible only within the same package).", 
+                    ["`public`.", "`private`.", "`protected`.", "World-Readable."]));
+                Q.push(R("Q17.2: A subclass located in a different package from the superclass can access which type of superclass members?", 
+                    "`public` and `protected` only.", 
+                    ["`public`, `protected`, and Default (Package-Private).", "`public` and `private` only.", "Only `static` members.", "Only members that are not Serialized."]));
+                Q.push(R("Q17.3: The primary purpose of Default (Package-Private) access is to:", 
+                    "Keep related utility classes and components together in a package, hiding their internal workings from external packages.", 
+                    ["Enforce strict Encapsulation within a single class.", "Guarantee 100% Code Coverage.", "Prevent the occurrence of a Deadlock.", "Allow the use of a Lambda Expression for serialization."]));
+
+                // super (3 Qs)
+                Q.push(R("Q18.1: The `super` keyword is used to refer to:", 
+                    "The direct superclass instance (or its constructor/methods).", 
+                    ["The current instance of the class (it should be `this`).", "A variable that is shared by all instances (it should be `static`).", "The return type of an Overloaded method.", "A class marked with a Marker Interface."]));
+                Q.push(R("Q18.2: The primary reason to call `super(...)` within a subclass constructor is to:", 
+                    "Explicitly invoke the corresponding constructor of the superclass to initialize inherited fields.", 
+                    ["Prevent the subclass from Overriding a method (it should be `final`).", "Access a `private` field of the superclass.", "Ensure the constructor throws a Checked Exception.", "Facilitate Autoboxing."]));
+                Q.push(R("Q18.3: When a subclass method calls `super.methodName()`, it ensures that:", 
+                    "The implementation of the method in the superclass is executed, rather than the Overridden version in the subclass.", 
+                    ["The subclass method is Overloaded.", "The method is automatically `synchronized`.", "The method is passed by reference.", "The method is using Generics."]));
+
+                // this (3 Qs)
+                Q.push(R("Q19.1: The `this` keyword refers to:", 
+                    "The current instance of the class.", 
+                    ["The direct superclass instance (it should be `super`).", "A `static` field.", "A Functional Interface.", "A Mock Object."]));
+                Q.push(R("Q19.2: A common use of `this` is to resolve a naming conflict, such as when:", 
+                    "An instance field and a method parameter have the same name (e.g., `this.name = name`).", 
+                    ["A subclass method and a superclass method have the same signature (it should be `@Override`).", "A `static` field conflicts with a local variable (it should be ClassName.FIELD).", "A `private` method conflicts with a `public` method.", "A Checked Exception conflicts with an Unchecked Exception."]));
+                Q.push(R("Q19.3: When a constructor calls `this(...)`, it is performing:", 
+                    "Constructor chaining, invoking another constructor within the same class.", 
+                    ["Constructor Overloading.", "An implicit call to `super()`.", "An explicit `throw` of an exception.", "A form of Reflection."]));
+
+                // Pass-by-Value (3 Qs)
+                Q.push(R("Q20.1: Java is strictly **Pass-by-Value**. For object arguments, this means:", 
+                    "A copy of the object's reference (memory address) is passed, allowing the called method to modify the object's internal state.", 
+                    ["A copy of the entire object is passed, ensuring the original object cannot be changed (Pass-by-Copy).", "The object itself is passed, and it can be reassigned to a new object (Pass-by-Reference).", "Only `final` variables can be passed this way.", "The object must be part of a `try-with-resources` block."]));
+                Q.push(R("Q20.2: If a method receives an object reference via Pass-by-Value, and the method reassigns the parameter to a *new* object, what happens to the original object outside the method?", 
+                    "The original object remains unchanged, as the reassignment only affects the copied reference within the method's scope.", 
+                    ["The original object reference is updated to point to the new object.", "The original object is immediately garbage collected.", "A Deadlock occurs.", "A Serialization error occurs."]));
+                Q.push(R("Q20.3: For primitive types (like `int`, `boolean`), Java uses Pass-by-Value to pass:", 
+                    "A copy of the data's content.", 
+                    ["A copy of the memory address (reference).", "A copy of the `static` memory location.", "The object after Autoboxing has occurred.", "The `this` reference."]));
+
+                // ====================================================================
+                // 4. Interfaces, Abstract Classes, and Lambdas
+                // ====================================================================
+
+                // Interface (3 Qs)
+                Q.push(R("Q21.1: Which construct defines a contract with abstract methods, allows `default` and `static` methods, but **CANNOT** define instance variables or constructors?", 
+                    "An Interface.", 
+                    ["An Abstract Class (can contain state and constructors).", "A Concrete Class.", "A `final` Class.", "A `protected` class."]));
+                Q.push(R("Q21.2: Interfaces enable Java to achieve:", 
+                    "Multiple Inheritance of Type, allowing a class to implement several contracts.", 
+                    ["Multiple Inheritance of State, allowing a class to inherit fields from multiple classes.", "Pass-by-Reference semantics.", "The explicit use of the `throw` keyword.", "The prevention of a Race Condition."]));
+                Q.push(R("Q21.3: Methods in an interface without the `default` or `static` keyword are implicitly:", 
+                    "`public` and `abstract`.", 
+                    ["`protected` and `static`.", "`private` and `final`.", "`synchronized` and `final`.", "Unchecked Exceptions."]));
+
+                // Abstract Class (3 Qs)
+                Q.push(R("Q22.1: A class that provides a common base for related subclasses, can have a constructor, and can contain both abstract (no implementation) and concrete (implemented) methods is defined as:", 
+                    "An Abstract Class.", 
+                    ["A Functional Interface, which has only one abstract method.", "A Marker Interface, which has no methods.", "A `final` class.", "A class that uses only Byte Streams."]));
+                Q.push(R("Q22.2: What is the defining characteristic of an Abstract Class?", 
+                    "It cannot be instantiated directly (cannot use the `new` keyword on it).", 
+                    ["It must be declared `final`.", "It must throw a Checked Exception.", "It must use a Mock Object for testing.", "It must have `public` access."]));
+                Q.push(R("Q22.3: Unlike an Interface, an Abstract Class can contain:", 
+                    "Instance variables and a constructor.", 
+                    ["Static and default methods only.", "Only `public` methods.", "Only `final` methods.", "Only Overloaded methods."]));
+
+                // Functional Interface (SAM) (3 Qs)
+                Q.push(R("Q23.1: An interface that contains exactly one abstract method (Single Abstract Method) is defined as a:", 
+                    "Functional Interface (the target for Lambda Expressions).", 
+                    ["Marker Interface (has no methods).", "Abstract Class.", "Generics Type.", "A `try-with-resources` block."]));
+                Q.push(R("Q23.2: What is the purpose of the `@FunctionalInterface` annotation?", 
+                    "It signals the compiler to check that the interface contains exactly one abstract method.", 
+                    ["It makes all methods in the interface `synchronized`.", "It forces all methods to be `final`.", "It enables Reflection on the interface.", "It automatically converts primitives to Wrapper classes (Autoboxing)."]));
+                Q.push(R("Q23.3: A Functional Interface may contain multiple `default` or `static` methods, provided that:", 
+                    "It still contains exactly one abstract method (SAM).", 
+                    ["It is declared `final`.", "It throws a Checked Exception.", "It uses the `super` keyword.", "It is used with `throws`."]));
+
+                // Lambda Expression (3 Qs)
+                Q.push(R("Q24.1: A concise representation of an anonymous function that implements the Single Abstract Method of a Functional Interface is called a:", 
+                    "Lambda Expression.", 
+                    ["Abstract Method.", "Mock Object.", "Generics Type.", "Unchecked Exception."]));
+                Q.push(R("Q24.2: Which component is used as the **target type** for a Lambda Expression?", 
+                    "A Functional Interface.", 
+                    ["An Abstract Class.", "A `final` class.", "A `static` method.", "A `protected` field."]));
+                Q.push(R("Q24.3: The standard syntax for a Lambda Expression is:", 
+                    "`(parameters) -> { body }`.", 
+                    ["`function parameters { body }`.", "`@Lambda parameters { body }`.", "`new Lambda() { ... }`.", "`static (parameters) -> { body }`."]));
+
+                // Marker Interface (3 Qs)
+                Q.push(R("Q25.1: An interface that contains no methods (or fields) and is used solely to tag a class with a specific property (e.g., `Serializable`) is known as a:", 
+                    "Marker Interface.", 
+                    ["Functional Interface.", "Abstract Class.", "Reflection Target.", "Lambda Expression Target."]));
+                Q.push(R("Q25.2: What is the primary purpose of a Marker Interface?", 
+                    "To signal to the JVM or a framework that the implementing class should be treated in a special way (e.g., capable of Serialization).", 
+                    ["To enforce the implementation of methods.", "To prevent method Overriding.", "To resolve a Race Condition.", "To manage thread access to resources (Synchronization)." ]));
+                Q.push(R("Q25.3: A class implements the `Serializable` Marker Interface. What process does this enable?", 
+                    "Serialization (converting the object to a byte stream).", 
+                    ["Autoboxing.", "Inheritance.", "Code Coverage testing.", "Pass-by-Reference."]));
+
+                // ====================================================================
+                // 5. Testing & Quality Assurance
+                // ====================================================================
+
+                // Unit Testing (3 Qs)
+                Q.push(R("Q26.1: Testing individual components (methods/classes) in isolation to validate they perform as designed is the definition of:", 
+                    "Unit Testing.", 
+                    ["Integration Testing (testing how units work together).", "System Testing (testing the complete system).", "Code Coverage (a metric).", "Debugging."]));
+                Q.push(R("Q26.2: A key characteristic of a good unit test is that it should be:", 
+                    "Isolated, independent, and fast (testing one single unit of work).", 
+                    ["Dependent on external systems like databases or networks.", "Covering the entire business flow of the application.", "Using Reflection to access private fields.", "Utilizing `try-with-resources` for all assertions."]));
+                Q.push(R("Q26.3: Why is isolation crucial for Unit Testing?", 
+                    "To ensure that a test fails only if the code *under test* is broken, and not because of a failure in a dependency.", 
+                    ["To ensure 100% Code Coverage.", "To prevent Overloading.", "To enable the use of Generics.", "To facilitate Autoboxing."]));
+
+                // Mock Objects (3 Qs)
+                Q.push(R("Q27.1: **Mock Objects** are used in Unit Testing to:", 
+                    "Simulate the behavior of external dependencies (like databases or APIs) to test the class in isolation.", 
+                    ["Measure how much code is executed during the test (it should be Code Coverage).", "Prevent the use of the `final` keyword.", "Ensure the method throws a Checked Exception.", "Resolve a Deadlock."]));
+                Q.push(R("Q27.2: When testing a `UserService` that depends on a `DatabaseConnector`, the `DatabaseConnector` should be replaced with a Mock Object to:", 
+                    "Prevent the test from making slow, unnecessary calls to a real database and ensure isolation.", 
+                    ["Ensure the `UserService` is declared `static`.", "Ensure the `UserService` is `final`.", "Check for a Race Condition.", "Demonstrate Polymorphism."]));
+                Q.push(R("Q27.3: Unlike a real object, a Mock Object allows the tester to:", 
+                    "Control the return values and verify the number of times its methods are called (behavior verification).", 
+                    ["Use Reflection to bypass `private` members.", "Force the object to be Serialized.", "Force a Pass-by-Reference call.", "Force Autoboxing."]));
+
+                // Code Coverage (3 Qs)
+                Q.push(R("Q28.1: A metric measuring how much of the source code is executed during testing (Statement, Branch, or Condition coverage) is called:", 
+                    "Code Coverage.", 
+                    ["Cohesion.", "Cyclomatic Complexity.", "Code Reflection.", "Serialization Percentage."]));
+                Q.push(R("Q28.2: If a test suite reports 100% Code Coverage, it guarantees:", 
+                    "That every line or branch of code has been executed at least once, but it does not guarantee the absence of bugs.", 
+                    ["That the code is completely bug-free and ready for production.", "That the class is `final`.", "That a Deadlock cannot occur.", "That Method Overloading is properly implemented."]));
+                Q.push(R("Q28.3: Why is high Code Coverage (e.g., >80%) considered important for software quality?", 
+                    "It minimizes the risk of undiscovered bugs and increases confidence in refactoring efforts.", 
+                    ["It automatically fixes all Checked Exceptions.", "It ensures every object is passed by reference.", "It prevents the use of the `super` keyword.", "It forces all interfaces to be Functional Interfaces."]));
+
+                // Assertions (JUnit) (3 Qs)
+                Q.push(R("Q29.1: In JUnit, which assertion is used to verify that a specific exception is thrown when a block of code is executed?", 
+                    "`assertThrows(Exception.class, () -> code)`.", 
+                    ["`assertEquals(expected, actual)`.", "`assertFalse(condition)`.", "`assertThrowing()`.", "`assertSynchronization()`."]));
+                Q.push(R("Q29.2: The primary role of an Assertion in a Unit Test is to:", 
+                    "Verify that the actual result of the code execution matches the expected result.", 
+                    ["Declare a Checked Exception (it should be `throws`).", "Define a Lambda Expression.", "Implement a Marker Interface.", "Manage memory allocation."]));
+                Q.push(R("Q29.3: If `assertEquals(5, calculator.add(2, 2))` is executed, and `calculator.add(2, 2)` returns 4, the assertion will:", 
+                    "Fail, because the expected value (5) does not equal the actual value (4).", 
+                    ["Succeed, because the method ran without throwing an exception.", "Throw an Unchecked Exception.", "Cause a Race Condition.", "Force Autoboxing of the result."]));
+
+                // ====================================================================
+                // 6. Exceptions and File I/O
+                // ====================================================================
+
+                // Checked Exceptions (3 Qs)
+                Q.push(R("Q30.1: Exceptions that are subclasses of `Exception` but **not** `RuntimeException`, and **MUST** be explicitly handled, are:", 
+                    "Checked Exceptions (e.g., `IOException`).", 
+                    ["Unchecked Exceptions (e.g., `NullPointerException`).", "Errors (e.g., `StackOverflowError`).", "Generic Exceptions.", "Final Exceptions."]));
+                Q.push(R("Q30.2: Checked Exceptions typically represent:", 
+                    "External errors or situations that are outside the programmer's control and can reasonably be anticipated and recovered from (e.g., file not found).", 
+                    ["Logic errors in the code (it should be Unchecked Exceptions).", "Permanent resource blocking (Deadlock).", "Overriding failures.", "Serialization problems."]));
+                Q.push(R("Q30.3: The requirement to handle a Checked Exception is enforced by:", 
+                    "The Java Compiler.", 
+                    ["The JVM at runtime.", "The `final` keyword.", "The `private` access modifier.", "The `assertThrows` assertion."]));
+
+                // Unchecked Exceptions (3 Qs)
+                Q.push(R("Q31.1: Exceptions that indicate logic errors (like bad array indexing or null references) and **do not** need to be declared or caught are known as:", 
+                    "Unchecked Exceptions (subclasses of `RuntimeException`).", 
+                    ["Checked Exceptions.", "Errors.", "Runtime Polymorphism.", "Byte Streams."]));
+                Q.push(R("Q31.2: A common cause of an Unchecked Exception is:", 
+                    "A programmer mistake, such as trying to access an element beyond an array's length (`ArrayIndexOutOfBoundsException`).", 
+                    ["A file not being found (`FileNotFoundException`, which is Checked).", "A network connection being unexpectedly terminated (`IOException`, which is Checked).", "Two threads accessing the same resource at the same time (Race Condition).", "Using the `super` keyword incorrectly."]));
+                Q.push(R("Q31.3: What is the main argument for not forcing the handling of Unchecked Exceptions?", 
+                    "They represent fatal logic flaws that are best fixed in the code rather than trying to recover from.", 
+                    ["They can be fixed using a Mock Object.", "They are automatically Serialized.", "They are always passed by value.", "They only occur in `static` methods."]));
+
+                // try-with-resources (3 Qs)
+                Q.push(R("Q32.1: The `try-with-resources` statement is designed to automatically handle which programming risk?", 
+                    "Resource leaks, by ensuring that resources (like I/O Streams or database connections) are automatically closed, even if an exception occurs.", 
+                    ["Deadlock, by automatically releasing locks.", "Method Overloading, by simplifying signatures.", "Pass-by-Reference semantics.", "The definition of a Marker Interface."]));
+                Q.push(R("Q32.2: A resource used in the parentheses of a `try-with-resources` statement must implement which interface?", 
+                    "`java.lang.AutoCloseable`.", 
+                    ["`java.io.Serializable`.", "`java.util.Runnable`.", "`java.util.Function` (a Functional Interface).", "`java.lang.Reflective`."]));
+                Q.push(R("Q32.3: Before `try-with-resources`, where were I/O Streams typically closed to guarantee execution?", 
+                    "In a `finally` block.", 
+                    ["In the `catch` block.", "In the `try` block before the operation.", "Only in the constructor.", "Only after using the `super` keyword."]));
+
+                // Streams (Byte Streams) (3 Qs)
+                Q.push(R("Q33.1: Streams that handle I/O of raw binary data, such as images, videos, or compiled class files, are known as:", 
+                    "Byte Streams (e.g., `FileInputStream`, `FileOutputStream`).", 
+                    ["Character Streams (handle text).", "Reflection Streams.", "Lambda Streams.", "Unchecked Streams."]));
+                Q.push(R("Q33.2: Which base class is used for all Byte Stream input operations?", 
+                    "`InputStream`.", 
+                    ["`Reader` (for Character Streams).", "`Writer`.", "`OutputStream`.", "`Thread`."]));
+                Q.push(R("Q33.3: Byte Streams often throw which type of exception due to external factors like disk errors?", 
+                    "A Checked Exception (`IOException`).", 
+                    ["An Unchecked Exception (`NullPointerException`).", "A Deadlock Error.", "A Generics Type Error.", "An Assertion Failure."]));
+
+                // Streams (Character Streams) (3 Qs)
+                Q.push(R("Q34.1: Streams that handle I/O of character data and automatically handle the translation to/from the local character set are known as:", 
+                    "Character Streams (e.g., `FileReader`, `BufferedReader`).", 
+                    ["Byte Streams (handle raw binary data).", "Synchronization Streams.", "Abstract Streams.", "Mock Streams."]));
+                Q.push(R("Q34.2: Which base class is used for all Character Stream output operations?", 
+                    "`Writer`.", 
+                    ["`Reader` (for input).", "`InputStream`.", "`OutputStream`.", "`Runnable`."]));
+                Q.push(R("Q34.3: Why are Character Streams generally preferred over Byte Streams when dealing with text data?", 
+                    "They correctly handle character encoding (like UTF-8) and localization, making text manipulation reliable.", 
+                    ["They are automatically `synchronized`.", "They are always `final`.", "They are passed by reference.", "They eliminate the need for `throw`."]));
+
+                // Throw (3 Qs)
+                Q.push(R("Q35.1: Which keyword is used to **manually trigger** an exception instance?", 
+                    "`throw` (used inside a method body).", 
+                    ["`throws` (used in a method signature).", "`try`.", "`catch`.", "`super`."]));
+                Q.push(R("Q35.2: What must immediately follow the `throw` keyword?", 
+                    "An instance of `Throwable` (e.g., `new Exception(...)`).", 
+                    ["The class name of the exception.", "A block of code (`{...}`).", "The `final` keyword.", "A `static` method."]));
+                Q.push(R("Q35.3: The `throw` statement is primarily used to:", 
+                    "Disrupt the normal flow of execution and signal an error condition to the calling method.", 
+                    ["Declare the possibility of an exception (it should be `throws`).", "Define a Functional Interface.", "Implement a Marker Interface.", "Manage a Thread."]));
+
+                // Throws (3 Qs)
+                Q.push(R("Q36.1: Which keyword is used in a **method signature** to declare the types of Checked Exceptions that the method might propagate?", 
+                    "`throws`.", 
+                    ["`throw` (used to trigger the exception).", "`try`.", "`catch`.", "`final`."]));
+                Q.push(R("Q36.2: Using the `throws` clause is mandatory when a method contains code that could generate a:", 
+                    "Checked Exception (and the exception is not caught within the method).", 
+                    ["Unchecked Exception (handling is optional).", "Deadlock.", "Race Condition.", "Method Overloading conflict."]));
+                Q.push(R("Q36.3: If a method declares `throws IOException`, what is the effect on any method that calls it?", 
+                    "The calling method must either handle the `IOException` with `try/catch` or declare it with `throws` itself.", 
+                    ["The calling method is automatically `synchronized`.", "The calling method is automatically `final`.", "The calling method uses Reflection.", "The calling method uses Autoboxing."]));
+
+                // ====================================================================
+                // 7. Threading and Concurrency
+                // ====================================================================
+
+                // Thread (3 Qs)
+                Q.push(R("Q37.1: A single sequential flow of control within a program is known as a:", 
+                    "Thread.", 
+                    ["Process (a group of threads).", "Race Condition.", "Mock Object.", "Byte Stream."]));
+                Q.push(R("Q37.2: What are the two primary ways to create a Thread in Java?", 
+                    "Extending the `Thread` class or implementing the `Runnable` interface.", 
+                    ["Implementing the `Serializable` interface or extending an `Abstract Class`.", "Using the `final` and `static` keywords.", "Using `try` and `catch` blocks.", "Using `throw` and `throws`."]));
+                Q.push(R("Q37.3: Why is implementing the `Runnable` interface often preferred over extending the `Thread` class?", 
+                    "Because Java does not support multiple inheritance of classes.", 
+                    ["Because `Runnable` is automatically `synchronized`.", "Because `Thread` is a `final` class.", "Because `Runnable` methods are `static`.", "Because `Runnable` methods are Overloaded."]));
+
+                // Runnable (3 Qs)
+                Q.push(R("Q38.1: The `Runnable` interface defines a single abstract method that contains the code to be executed by a thread. What is the method's name?", 
+                    "`public void run()`.", 
+                    ["`public void start()`.", "`public static void execute()`.", "`public final void threadRun()`.", "`public void process()`."]));
+                Q.push(R("Q38.2: Because `Runnable` has exactly one abstract method, it is a:", 
+                    "Functional Interface, and can be implemented by a Lambda Expression.", 
+                    ["Marker Interface.", "Abstract Class.", "Generics Type.", "Assertion Type."]));
+                Q.push(R("Q38.3: A `Runnable` object is typically passed to the constructor of which class?", 
+                    "`Thread`.", 
+                    ["`Object`.", "`Exception`.", "`MockObject`.", "`CharacterStream`."]));
+
+                // Synchronization (3 Qs)
+                Q.push(R("Q39.1: The capability to control the access of multiple threads to any shared resource, preventing data corruption, is called:", 
+                    "Synchronization.", 
+                    ["Race Condition (the problem).", "Deadlock (the problem).", "Thread Autoboxing.", "Polymorphism."]));
+                Q.push(R("Q39.2: Synchronization is typically implemented in Java using which mechanism?", 
+                    "The `synchronized` keyword, which uses intrinsic locks (monitors).", 
+                    ["The `final` keyword.", "The `static` keyword.", "The `throws` keyword.", "The `super` keyword."]));
+                Q.push(R("Q39.3: When an instance method is `synchronized`, which object acts as the lock?", 
+                    "The `this` object (the current instance).", 
+                    ["The Class object (for `static synchronized` methods).", "The `super` object.", "The `throw` exception instance.", "The `new` keyword."]));
+
+                // Race Condition (3 Qs)
+                Q.push(R("Q40.1: An undesirable situation where the outcome of a program depends on the unpredictable sequence or timing of multiple threads accessing shared data is a:", 
+                    "Race Condition.", 
+                    ["Deadlock (permanent blocking).", "Synchronization (the solution).", "Pass-by-Value error.", "Method Overloading conflict."]));
+                Q.push(R("Q40.2: A Race Condition can be prevented by ensuring that access to shared resources is:", 
+                    "Synchronized (only one thread can modify the data at a time).", 
+                    ["Encapsulated with `public` access.", "Marked as `final`.", "Accessed using Reflection.", "Handled with `try-with-resources`."]));
+                Q.push(R("Q40.3: The section of code that accesses shared resources and must be protected from simultaneous access by multiple threads is called a:", 
+                    "Critical Section.", 
+                    ["Abstract Section.", "Functional Interface.", "Assertion Block.", "Unchecked Block."]));
+
+                // Deadlock (3 Qs)
+                Q.push(R("Q41.1: A situation where two or more threads are permanently blocked, waiting for resources held by the other, resulting in system paralysis, is known as:", 
+                    "Deadlock.", 
+                    ["Race Condition.", "Livelock (busy but no progress).", "Starvation (one thread always denied).", "Checked Exception."]));
+                Q.push(R("Q41.2: Deadlock typically involves two threads and two shared resources. What condition is necessary for a Deadlock to occur?", 
+                    "Each thread holds a lock on one resource and is waiting for the other thread to release the second resource (Circular Wait).", 
+                    ["Both threads are only reading the shared resources (No Mutex).", "The resources are all marked as `static`.", "The code has 100% Code Coverage.", "The resources are Overloaded."]));
+                Q.push(R("Q41.3: Deadlock is a concurrency issue that Synchronization is intended to fix. However, if Synchronization is implemented poorly, it can:", 
+                    "Cause the Deadlock itself by locking resources in an unpredictable order.", 
+                    ["Be fixed with Autoboxing.", "Be fixed with Generics.", "Be fixed with the `this` keyword.", "Be fixed with a Byte Stream."]));
+
+                // ====================================================================
+                // 8. Advanced Java Features
+                // ====================================================================
+
+                // Serialization (3 Qs)
+                Q.push(R("Q42.1: The process of converting an object into a byte stream to save to a file or transmit over a network is called:", 
+                    "Serialization.", 
+                    ["Reflection.", "Autoboxing.", "Encapsulation.", "Unit Testing."]));
+                Q.push(R("Q42.2: For a class to be serializable, it must implement which Marker Interface?", 
+                    "`java.io.Serializable`.", 
+                    ["`java.lang.Cloneable`.", "`java.lang.AutoCloseable`.", "`java.util.Runnable`.", "java.util.Function`."]));
+                Q.push(R("Q42.3: Which keyword is used to mark a field so that it is **not** included in the serialization process?", 
+                    "`transient`.", 
+                    ["`static` (static fields are never serialized).", "`final`.", "`private`.", "`protected`."]));
+
+                // Reflection (3 Qs)
+                Q.push(R("Q43.1: The API that allows a program to inspect and modify the behavior of applications at runtime (e.g., accessing private fields dynamically) is:", 
+                    "Reflection.", 
+                    ["Serialization.", "Autoboxing.", "Synchronization.", "Polymorphism."]));
+                Q.push(R("Q43.2: Why is the use of Reflection generally discouraged in normal application code?", 
+                    "It bypasses type checking and access control (Encapsulation), potentially leading to runtime errors and security issues.", 
+                    ["It causes Deadlock.", "It prevents the use of the `super` keyword.", "It throws only Checked Exceptions.", "It enforces 100% Code Coverage."]));
+                Q.push(R("Q43.3: Reflection is often used by Java frameworks and tools, such as:", 
+                    "Mocking frameworks (to inspect and replace methods) or persistence libraries (to access private fields).", 
+                    ["To define Lambda Expressions.", "To fix Race Conditions.", "To implement Method Overloading.", "To manage Byte Streams."]));
+
+                // Generics (3 Qs)
+                Q.push(R("Q44.1: The feature that enables types (classes and interfaces) to be parameters when defining classes, interfaces, and methods is called:", 
+                    "Generics (providing compile-time type safety).", 
+                    ["Reflection.", "Autoboxing.", "Pass-by-Value.", "Method Hiding."]));
+                Q.push(R("Q44.2: What is the main benefit of using Generics (e.g., `List<String>`) over raw types (e.g., `List`)?", 
+                    "It provides compile-time type safety, preventing ClassCastExceptions at runtime.", 
+                    ["It automatically Serializes the contents.", "It prevents Method Overriding.", "It fixes Deadlock.", "It ensures the class is `final`."]));
+                Q.push(R("Q44.3: The compiler replacement of generic type parameters with their bounding types (usually `Object`) during compilation is known as:", 
+                    "Type Erasure.", 
+                    ["Autoboxing.", "Unboxing.", "Dynamic Binding.", "Synchronization."]));
+
+                // Autoboxing/Unboxing (3 Qs)
+                Q.push(R("Q45.1: The automatic conversion between a primitive type (e.g., `int`) and its corresponding Wrapper class object (e.g., `Integer`) is called:", 
+                    "Autoboxing.", 
+                    ["Unboxing (the reverse conversion).", "Type Casting.", "Generics.", "Serialization."]));
+                Q.push(R("Q45.2: The automatic conversion from a Wrapper class object back to its corresponding primitive type is called:", 
+                    "Unboxing.", 
+                    ["Autoboxing.", "Reflection.", "Pass-by-Value.", "Synchronization."]));
+                Q.push(R("Q45.3: Autoboxing and Unboxing primarily allow primitive types to be seamlessly integrated with which Java feature?", 
+                    "Collections and Generics, which require objects (Wrapper types).", 
+                    ["The `final` keyword.", "The `static` keyword.", "Method Overloading.", "Unchecked Exceptions."]));
+
+                return Q;
+            }
+
+            // Utility to shuffle an array (from above)
+            shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // Selects 25 random questions from the pool and starts the quiz
+            startQuiz() {
+                this.isStarted = true;
+                // Shuffle the full pool and take the first 'totalQuestions' elements (25)
+                this.questions = this.shuffle(this.allQuestions).slice(0, this.totalQuestions);
+                this.currentQuestionIndex = 0;
+                this.score = 0;
+                this.render();
+            }
+
+            // --- Rendering Methods (from above) ---
+
+            render() {
+                if (!this.isStarted) {
+                    this.renderStartScreen();
+                } else if (this.currentQuestionIndex < this.questions.length) {
+                    this.renderQuestion();
+                } else {
+                    this.renderResults();
+                }
+            }
+
+            renderStartScreen() {
+                const totalPool = this.allQuestions.length;
+                this.appElement.innerHTML = `
+                    <div class="text-center p-8 bg-indigo-50 rounded-lg border-2 border-indigo-200">
+                        <h2 class="text-2xl font-bold text-indigo-800 mb-4">Welcome, COMP20350 Student!</h2>
+                        <p class="text-lg text-gray-700 mb-6">
+                            This revision quiz is designed to test your mastery of 25 randomly selected questions covering all the crucial and confusing 'Tricky Pairs' of OOP concepts, mirroring the Part A exam format.
+                        </p>
+                        <div class="text-xl font-semibold text-gray-900 mb-4 p-3 bg-indigo-100 rounded-lg">
+                            Pool Size: ${totalPool} Questions | Quiz Length: ${this.totalQuestions} Questions
+                        </div>
+                        <button id="start-button" class="bg-indigo-600 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-indigo-700 transition duration-150 ease-in-out transform hover:scale-[1.02]">
+                            Start 25-Question Exam Simulation &rarr;
+                        </button>
+                    </div>
+                `;
+                document.getElementById('start-button').addEventListener('click', () => this.startQuiz());
+            }
+
+            renderQuestion() {
+                const q = this.questions[this.currentQuestionIndex];
+                const qNum = this.currentQuestionIndex + 1;
+                const totalQs = this.questions.length;
+
+                // Question structure HTML
+                let optionsHtml = q.options.map((option, index) => {
+                    const label = String.fromCharCode(65 + index); // A, B, C, D, E
+                    return `
+                        <button data-answer="${label}"
+                                class="option-button w-full text-left bg-gray-100 p-4 mb-3 rounded-lg border border-transparent hover:border-indigo-400 hover:bg-indigo-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                            <span class="font-semibold text-indigo-600 mr-3">${label}:</span>
+                            ${option}
+                        </button>
+                    `;
+                }).join('');
+
+                this.appElement.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="text-sm font-medium text-indigo-600 mb-2">
+                            Question ${qNum} of ${totalQs}
+                        </div>
+                        <div class="bg-indigo-100 p-4 rounded-lg shadow-inner">
+                            <h2 class="text-xl font-semibold text-indigo-900">${q.prompt}</h2>
+                        </div>
+                        <div id="options-container" class="space-y-2">
+                            ${optionsHtml}
+                        </div>
+                        <div id="feedback-message" class="mt-4 p-3 rounded-lg font-medium hidden"></div>
+                        <button id="next-button" class="mt-4 w-full bg-indigo-500 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-indigo-600 transition duration-150 ease-in-out disabled:opacity-50" disabled>
+                            Next Question &rarr;
+                        </button>
+                    </div>
+                `;
+
+                // Add event listeners after rendering
+                this.addEventListeners(q.correctAnswer);
+            }
+
+            addEventListeners(correctAnswer) {
+                const optionsContainer = document.getElementById('options-container');
+                const nextButton = document.getElementById('next-button');
+
+                // Listener for answer selection
+                optionsContainer.addEventListener('click', (event) => {
+                    const button = event.target.closest('.option-button');
+                    if (!button || button.disabled) return;
+
+                    // Disable all options after one is clicked
+                    optionsContainer.querySelectorAll('.option-button').forEach(btn => btn.disabled = true);
+
+                    const selectedAnswer = button.dataset.answer;
+                    const isCorrect = this.questions[this.currentQuestionIndex].isCorrect(selectedAnswer);
+
+                    this.handleAnswer(button, isCorrect);
+
+                    // Enable next button
+                    nextButton.disabled = false;
+                });
+
+                // Listener for moving to the next question
+                nextButton.addEventListener('click', () => {
+                    this.currentQuestionIndex++;
+                    this.render();
+                });
+            }
+
+            handleAnswer(button, isCorrect) {
+                const feedbackMessage = document.getElementById('feedback-message');
+                feedbackMessage.classList.remove('hidden');
+
+                if (isCorrect) {
+                    this.score++;
+                    button.classList.remove('bg-gray-100', 'hover:bg-indigo-50', 'hover:border-indigo-400');
+                    button.classList.add('bg-green-100', 'border-green-500', 'ring-2', 'ring-green-500');
+                    feedbackMessage.className = 'mt-4 p-3 rounded-lg font-medium bg-green-50 text-green-700';
+                    feedbackMessage.innerHTML = '✅ **Correct!** Excellent work. You nailed that tricky concept.';
+                } else {
+                    const correctButton = document.querySelector(`[data-answer="${this.questions[this.currentQuestionIndex].correctAnswer}"]`);
+                    
+                    button.classList.remove('bg-gray-100', 'hover:bg-indigo-50', 'hover:border-indigo-400');
+                    button.classList.add('bg-red-100', 'border-red-500', 'ring-2', 'ring-red-500');
+                    
+                    if (correctButton) {
+                        correctButton.classList.remove('bg-gray-100', 'hover:bg-indigo-50', 'hover:border-indigo-400');
+                        correctButton.classList.add('bg-green-200', 'border-green-600', 'ring-2', 'ring-green-600', 'font-bold');
+                    }
+
+                    feedbackMessage.className = 'mt-4 p-3 rounded-lg font-medium bg-red-50 text-red-700';
+                    feedbackMessage.innerHTML = `❌ **Incorrect.** The correct answer was **${this.questions[this.currentQuestionIndex].correctAnswer}**. Review the distinction carefully.`;
+                }
+            }
+
+            renderResults() {
+                const percentage = Math.round((this.score / this.questions.length) * 100);
+                let message = "";
+                let textColor = "text-red-600";
+                let badgeColor = "bg-red-100 text-red-800";
+
+                if (percentage === 100) {
+                    message = "A perfect score! You have a crystal-clear understanding of the most challenging OOP pairs. You are ready!";
+                    textColor = "text-green-600";
+                    badgeColor = "bg-green-100 text-green-800";
+                } else if (percentage >= 80) {
+                    message = "Outstanding! Your score is above 80%, indicating a strong mastery of all core themes. You are well-prepared for Part A.";
+                    textColor = "text-green-600";
+                    badgeColor = "bg-green-100 text-green-800";
+                } else if (percentage >= 70) {
+                    message = "Very well done! You mastered most of the tricky pairs. Review the concepts you missed to secure full marks.";
+                    textColor = "text-yellow-600";
+                    badgeColor = "bg-yellow-100 text-yellow-800";
+                } else {
+                    message = "Keep studying! The distinctions between these pairs are crucial for COMP20350. Focus your review on the areas where you struggled and try again.";
+                    textColor = "text-red-600";
+                    badgeColor = "bg-red-100 text-red-800";
+                }
+
+                this.appElement.innerHTML = `
+                    <div class="text-center p-8 bg-gray-50 rounded-lg">
+                        <h2 class="text-4xl font-extrabold text-indigo-700 mb-4">Quiz Complete!</h2>
+                        <div class="mb-6 p-4 rounded-xl ${badgeColor} inline-block">
+                            <span class="text-xl font-bold">Your Final Score: ${this.score} / ${this.questions.length} (${percentage}%)</span>
+                        </div>
+                        <p class="text-lg ${textColor} mb-6">${message}</p>
+                        <button onclick="new QuizApp().renderStartScreen()" class="bg-indigo-500 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-indigo-600 transition duration-150 ease-in-out">
+                            Try New Questions &rarr;
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the application when the window loads
+        window.onload = () => {
+            const app = new QuizApp();
+            // Start screen is rendered by default in the constructor
+        };
+
+    </script>
+</body>
+</html>
